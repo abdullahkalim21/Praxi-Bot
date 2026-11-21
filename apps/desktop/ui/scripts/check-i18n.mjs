@@ -4,10 +4,42 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+// Values a locale may leave identical to English. A non-English value that equals the English
+// one is reported as a warning ("warn ..."), because it often means the string was copied and
+// never translated. The warning is only a hint and never changes the exit code; these rules
+// silence the matches that are expected to be the same in every language.
+//
+// Brand, product and protocol names are written the same everywhere.
+const SAME_AS_ENGLISH_VALUES = new Set([
+  "Praxi", "Praxi-Bot", "Anthropic", "Google Gemini", "Ollama", "LM Studio",
+  "OpenAI, OpenRouter, DeepSeek", "Composio", "AgentMail", "Telegram", "Node.js", "uv",
+  "HTTP", "TLS", "STARTTLS", "IMAP", "SMTP", "SearXNG URL",
+]);
+// Groups of keys whose values are names by design.
+const SAME_AS_ENGLISH_KEY_PREFIXES = [
+  "settings.language.", // each language's own name, the same in every locale on purpose
+  "settingsModal.email.form.presets.", // mail providers (Gmail, iCloud, ...)
+  "settingsModal.webSearch.backends.", // search engines and their APIs
+];
+// Keys ending in "Placeholder" hold example input (domains, app ids, model ids), not prose.
+const isExamplePlaceholder = (key) => key.endsWith("Placeholder");
+// Nothing to translate once {{placeholders}} are removed: "{{message}}", "×{{count}}", "".
+const hasNoWords = (value) => !/\p{L}/u.test(value.replace(/\{\{[^}]*\}\}/g, ""));
+// Keyboard shortcuts such as "Ctrl+Alt+Esc" or "Ctrl ,": key caps are not translated.
+const KEY_CAP = String.raw`(?:Ctrl|Alt|Shift|Cmd|Esc|Enter|Tab|[A-Z0-9]|[,./])`;
+const isShortcut = (value) => new RegExp(`^${KEY_CAP}(?:[+ ]${KEY_CAP})*$`).test(value);
+const mayMatchEnglish = (key, value) =>
+  SAME_AS_ENGLISH_VALUES.has(value) ||
+  SAME_AS_ENGLISH_KEY_PREFIXES.some((prefix) => key.startsWith(prefix)) ||
+  isExamplePlaceholder(key) ||
+  hasNoWords(value) ||
+  isShortcut(value);
+
 const root = fileURLToPath(new URL("../src/", import.meta.url));
+// Flattens nested objects into [dotted key, leaf value] pairs.
 const flat = (o, p = "") =>
   Object.entries(o).flatMap(([k, v]) =>
-    v && typeof v === "object" ? flat(v, `${p}${k}.`) : [`${p}${k}`]
+    v && typeof v === "object" ? flat(v, `${p}${k}.`) : [[`${p}${k}`, v]]
   );
 // Maps every node to its kind (array, object or string). Only plain objects are walked,
 // so an array and an object with the same indices are still told apart.
@@ -18,16 +50,24 @@ const kinds = (o, p = "") =>
     ...(kindOf(v) === "object" ? kinds(v, `${p}${k}.`) : []),
   ]);
 const localeDir = join(root, "i18n/locales");
-const readKeys = (file) => new Set(flat(JSON.parse(readFileSync(join(localeDir, file), "utf8"))));
+const readValues = (file) => new Map(flat(JSON.parse(readFileSync(join(localeDir, file), "utf8"))));
 const readKinds = (file) => new Map(kinds(JSON.parse(readFileSync(join(localeDir, file), "utf8"))));
-const en = readKeys("en.json");
+const enValues = readValues("en.json");
+const en = new Set(enValues.keys());
 const enKinds = readKinds("en.json");
 let bad = 0;
 const localeFiles = readdirSync(localeDir).filter((file) => file !== "en.json" && file.endsWith(".json")).sort();
 for (const file of localeFiles) {
   if (!statSync(join(localeDir, file)).isFile()) continue;
   const locale = file.slice(0, -".json".length);
-  const keys = readKeys(file);
+  const values = readValues(file);
+  const keys = new Set(values.keys());
+  // Report-only: likely untranslated strings. Never counted in `bad`.
+  const same = [...values].filter(
+    ([key, value]) => typeof value === "string" && value === enValues.get(key) && !mayMatchEnglish(key, value)
+  );
+  console.warn(`${locale}: ${same.length} values identical to English`);
+  for (const [key, value] of same) console.warn(`warn ${locale}: ${key} = ${JSON.stringify(value)}`);
   for (const key of en) {
     if (keys.has(key)) continue;
     console.error(`missing in ${locale}: ${key}`);

@@ -29,6 +29,14 @@ All paths are under `apps/desktop/ui/src/`.
    ```
    `check:i18n` compares every file in `i18n/locales/` against `en.json`, so a new locale only has to be
    added there.
+
+   It also prints a summary per locale, such as `tr: 27 values identical to English`, followed by
+   one `warn <code>: <key> = "<value>"` line for each value that is exactly the English text. These
+   are often strings that were copied from `en.json` and not translated yet. The list is only a hint:
+   many words are correctly the same in your language (`Terminal`, `Port`), so translate what needs
+   it and leave the rest. The warnings never make the check fail. Brand and product names,
+   placeholder-only values such as `{{count}}`, example values in `*Placeholder` keys and keyboard
+   shortcuts are skipped; the allow-list is at the top of `scripts/check-i18n.mjs`.
 6. **Look at it.** Run the UI in mock mode (`pnpm --dir apps/desktop/ui dev`, then
    `http://localhost:1420/?mock=1&lang=<code>`) and check long strings do not break the layout
    (buttons, the Apps grid, the right panel). Add screenshots of a dark and the light theme to the
