@@ -25,9 +25,10 @@ const SAME_AS_ENGLISH_KEY_PREFIXES = [
 const isExamplePlaceholder = (key) => key.endsWith("Placeholder");
 // Nothing to translate once {{placeholders}} are removed: "{{message}}", "×{{count}}", "".
 const hasNoWords = (value) => !/\p{L}/u.test(value.replace(/\{\{[^}]*\}\}/g, ""));
-// Keyboard shortcuts such as "Ctrl+Alt+Esc" or "Ctrl ,": key caps are not translated.
+// Keyboard shortcuts such as "Ctrl+Alt+Esc" or "Ctrl ,": key caps are not translated. Only
+// combinations count, so a bare "Tab" or "Enter" (often a word some locales translate) still warns.
 const KEY_CAP = String.raw`(?:Ctrl|Alt|Shift|Cmd|Esc|Enter|Tab|[A-Z0-9]|[,./])`;
-const isShortcut = (value) => new RegExp(`^${KEY_CAP}(?:[+ ]${KEY_CAP})*$`).test(value);
+const isShortcut = (value) => new RegExp(`^${KEY_CAP}(?:[+ ]${KEY_CAP})+$`).test(value);
 const mayMatchEnglish = (key, value) =>
   SAME_AS_ENGLISH_VALUES.has(value) ||
   SAME_AS_ENGLISH_KEY_PREFIXES.some((prefix) => key.startsWith(prefix)) ||

@@ -61,3 +61,23 @@ test("keeps the success output when all locale and source keys match", () => {
   assert.equal(result.status, 0);
   assert.equal(result.stdout.trim(), "i18n ok (1 keys)");
 });
+
+test("warns about values identical to English without changing the output or exit code", () => {
+  const result = check({
+    en: { send: "Send", port: "Port" },
+    tr: { send: "Gönder", port: "Port" },
+  });
+  assert.equal(result.status, 0);
+  assert.equal(result.stdout.trim(), "i18n ok (2 keys)");
+  assert.match(result.stderr, /^tr: 1 values identical to English$/m);
+  assert.match(result.stderr, /^warn tr: port = "Port"$/m);
+  assert.doesNotMatch(result.stderr, /warn tr: send/);
+});
+
+test("skips keyboard shortcut combinations but still warns about a bare key name", () => {
+  const keys = { combo: "Ctrl+Enter", tab: "Tab" };
+  const result = check({ en: { keys }, tr: { keys } });
+  assert.equal(result.status, 0);
+  assert.match(result.stderr, /^warn tr: keys\.tab = "Tab"$/m);
+  assert.doesNotMatch(result.stderr, /keys\.combo/);
+});
