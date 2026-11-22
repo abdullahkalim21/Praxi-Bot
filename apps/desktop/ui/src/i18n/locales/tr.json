@@ -861,6 +861,8 @@
       "toolsOnHint": "Okumaya izin var. Göndermek her zaman bu botun izin moduna uyar ve varsayılan olarak önce sorar."
     },
     "makeMain": "Ana bot yap",
+    "muteNotify": "Çalışma bildirimlerini sessize al",
+    "muteNotifyHint": "Bu botun biten ve başarısız çalışmaları sessiz kalır ve bildirim geçmişine düşer. Onaylar ve sorular yine bildirilir.",
     "myComputer": "Benim bilgisayarım",
     "needsDesktop": "{{name}} sunucusunda masaüstü oturumu yok, bu yüzden gösterilecek ekran yok. Eklemek için bu bilgisayarda şunu çalıştır:",
     "noChatMatches": "Eşleşen sohbet yok",
@@ -3393,6 +3395,7 @@
     "clear": "Geçmişi temizle",
     "empty": "Henüz bildirim yok.",
     "held": "Tutuldu (sessiz saatler)",
+    "heldMuted": "Tutuldu (bot sessizde)",
     "kind": {
       "failed": "Çalışma başarısız",
       "longRun": "Uzun çalışma bitti",

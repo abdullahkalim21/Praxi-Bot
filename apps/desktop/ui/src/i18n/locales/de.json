@@ -861,6 +861,8 @@
       "toolsOnHint": "Lesen ist erlaubt. Senden richtet sich immer nach dem Berechtigungsmodus dieses Bots und fragt standardmäßig zuerst nach."
     },
     "makeMain": "Zum Haupt-Bot machen",
+    "muteNotify": "Lauf-Benachrichtigungen stummschalten",
+    "muteNotifyHint": "Beendete und fehlgeschlagene Läufe dieses Bots bleiben still und landen im Benachrichtigungsverlauf. Freigaben und Fragen melden sich weiterhin.",
     "myComputer": "Mein Computer",
     "needsDesktop": "{{name}} hat keine Desktop-Sitzung, daher gibt es keinen Bildschirm zum Anzeigen. Um eine hinzuzufügen, führe auf diesem Computer aus:",
     "noChatMatches": "Keine passenden Chats",
@@ -3393,6 +3395,7 @@
     "clear": "Verlauf löschen",
     "empty": "Noch keine Benachrichtigungen.",
     "held": "Zurückgehalten (Ruhezeit)",
+    "heldMuted": "Zurückgehalten (Bot stummgeschaltet)",
     "kind": {
       "failed": "Lauf fehlgeschlagen",
       "longRun": "Langer Lauf beendet",
